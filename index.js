@@ -1,13 +1,20 @@
+// index.js
 import express from 'express'
 import * as crypto from 'crypto'
 import * as qrcode from 'qrcode'
 import { Boom } from '@hapi/boom'
+import dotenv from 'dotenv'
+dotenv.config()
+
 import {
   makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion
 } from '@whiskeysockets/baileys'
+
+import { responderIA } from './ia.js'
+import { registrarPedido } from './sheet.js'
 
 global.crypto = crypto
 const app = express()
@@ -45,28 +52,35 @@ const startSock = async () => {
 
   sock.ev.on('creds.update', saveCreds)
 
-  // Manejador de mensajes entrantes con lógica tipo IA
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return
+  // IA: responder mensajes y registrar pedidos si aplica
+  sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0]
-    if (!msg.message || msg.key.fromMe) return
+    if (!msg.message) return
 
-    const texto = msg.message.conversation || msg.message.extendedTextMessage?.text || ''
     const numero = msg.key.remoteJid
+    const texto = msg.message?.conversation || msg.message?.extendedTextMessage?.text
+    if (!texto) return
 
-    let respuesta = ''
-    if (texto.toLowerCase().includes('hola')) {
-      respuesta = '¡Hola! ¿Cómo estás? 😊'
-    } else if (texto.toLowerCase().includes('precio')) {
-      respuesta = 'Tenemos promo de muzzarella a Gs. 25.000 🍕'
-    } else {
-      respuesta = 'No entendí muy bien 😅 ¿Podés repetir?'
+    try {
+      const respuesta = await responderIA(texto)
+      await sock.sendMessage(numero, { text: typeof respuesta === 'string' ? respuesta : respuesta.text })
+
+      if (typeof respuesta === 'object' && respuesta.pedido) {
+        await registrarPedido({
+          cliente: '',
+          numero,
+          producto: respuesta.pedido.producto,
+          cantidad: respuesta.pedido.cantidad,
+          precioUnitario: respuesta.pedido.precio,
+          observaciones: respuesta.pedido.observaciones || ''
+        })
+      }
+    } catch (err) {
+      console.error('Error IA:', err.message)
     }
-
-    await sock.sendMessage(numero, { text: respuesta })
   })
 
-  // Endpoint para enviar mensajes
+  // Endpoint manual para enviar mensajes
   app.post('/send', async (req, res) => {
     const { numero, mensaje } = req.body
     if (!numero || !mensaje) {
@@ -85,7 +99,7 @@ const startSock = async () => {
 startSock()
 
 app.get('/', (req, res) => {
-  res.send('✅ Bot WhatsApp activo con Baileys + Railway')
+  res.send('✅ Bot WhatsApp activo con Baileys + Railway + Groq + Sheets')
 })
 
 app.listen(PORT, () => console.log(`🚀 Servidor activo en el puerto ${PORT}`))
