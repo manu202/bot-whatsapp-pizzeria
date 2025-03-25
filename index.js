@@ -1,5 +1,7 @@
 // Proyecto base Baileys para Railway
 // index.js
+import * as crypto from 'crypto'
+global.crypto = crypto
 
 import {
   makeWASocket,
