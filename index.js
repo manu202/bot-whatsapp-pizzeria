@@ -45,6 +45,27 @@ const startSock = async () => {
 
   sock.ev.on('creds.update', saveCreds)
 
+  // Manejador de mensajes entrantes con lógica tipo IA
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    if (type !== 'notify') return
+    const msg = messages[0]
+    if (!msg.message || msg.key.fromMe) return
+
+    const texto = msg.message.conversation || msg.message.extendedTextMessage?.text || ''
+    const numero = msg.key.remoteJid
+
+    let respuesta = ''
+    if (texto.toLowerCase().includes('hola')) {
+      respuesta = '¡Hola! ¿Cómo estás? 😊'
+    } else if (texto.toLowerCase().includes('precio')) {
+      respuesta = 'Tenemos promo de muzzarella a Gs. 25.000 🍕'
+    } else {
+      respuesta = 'No entendí muy bien 😅 ¿Podés repetir?'
+    }
+
+    await sock.sendMessage(numero, { text: respuesta })
+  })
+
   // Endpoint para enviar mensajes
   app.post('/send', async (req, res) => {
     const { numero, mensaje } = req.body
