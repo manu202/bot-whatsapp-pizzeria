@@ -78,6 +78,16 @@ const startSock = async () => {
     } catch (err) {
       console.error('Error IA:', err.message)
     }
+
+    // Si el contenido es un pedido en JSON, registrarlo
+if (typeof respuesta === 'object' && Array.isArray(respuesta.pedido)) {
+  await registrarPedido({
+    numero,
+    pedido: respuesta.pedido,
+    total: respuesta.total
+  })
+}
+
   })
 
   // Endpoint manual para enviar mensajes
