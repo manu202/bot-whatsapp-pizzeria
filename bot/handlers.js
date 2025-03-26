@@ -7,7 +7,7 @@ import {
   obtenerPromos,
   obtenerPedidosActivos,
   obtenerResumenDelDia
-} from '../sheet.js'
+} from '../lib/supabase.js'
 import { estaDentroDelHorario, puedeHablar } from '../control.js'
 
 const ADMIN_NUMEROS = ['595987654321@c.us'] // <-- actualizar si hace falta
