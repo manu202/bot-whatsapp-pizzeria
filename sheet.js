@@ -35,3 +35,21 @@ export async function obtenerMenu() {
       disponible
     }))
 }
+
+
+export async function obtenerPromos() {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: 'Promos!A2:C'
+    })
+  
+    const rows = res.data.values
+    if (!rows || rows.length === 0) return []
+  
+    return rows.map(([promo, descripcion, precio]) => ({
+      promo,
+      descripcion,
+      precio: parseInt(precio)
+    }))
+  }
+  
