@@ -1,6 +1,6 @@
 // control.js
 const HORARIO = {
-    desde: 01, // 1:00 AM
+    desde: 1, // 1:00 AM
     hasta: 23  // 23:00 PM
   }
   
