@@ -48,7 +48,7 @@ export async function responderIA(prompt) {
     contenido = contenido
       .replace(/```json[\s\S]*?```/g, '')                       // eliminar bloques de código
       .replace(/```[\s\S]*?```/g, '')                           // eliminar cualquier bloque de código
-      .replace(/(?<=\n)?(Thought|Pensamiento|Razonamiento):.*$/gim, '') // líneas tipo razonamiento
+      .replace(/^(Thought|Pensamiento|Razonamiento):.*$/gim, '') // líneas tipo razonamiento
       .replace(/\{[\s\S]*?\}/g, '')                            // eliminar cualquier JSON entre llaves
       .trim()
 
