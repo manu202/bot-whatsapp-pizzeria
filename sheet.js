@@ -1,12 +1,14 @@
 // sheet.js
 import { google } from 'googleapis'
 import dotenv from 'dotenv'
-import fs from 'fs'
 
 dotenv.config()
 
 const SHEET_ID = process.env.SHEET_ID
-const credentials = JSON.parse(fs.readFileSync('./credentials.json'))
+
+const credentials = JSON.parse(
+  Buffer.from(process.env.GOOGLE_CREDENTIALS_B64, 'base64').toString('utf-8')
+)
 
 const auth = new google.auth.GoogleAuth({
   credentials,
@@ -33,40 +35,3 @@ export async function obtenerMenu() {
       disponible
     }))
 }
-
-export async function obtenerPromos() {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
-    range: 'Promos!A2:B'
-  })
-
-  const rows = res.data.values
-  if (!rows || rows.length === 0) return []
-
-  return rows.map(([promo, descripcion]) => ({ promo, descripcion }))
-}
-
-export async function registrarPedido({ cliente, numero, producto, cantidad, precioUnitario, observaciones }) {
-  const fecha = new Date().toLocaleString('es-PY', { timeZone: 'America/Asuncion' })
-  const total = cantidad * precioUnitario
-  const fila = [
-    fecha,
-    cliente || '',
-    numero,
-    producto,
-    cantidad,
-    precioUnitario,
-    total,
-    'Pendiente',
-    observaciones || ''
-  ]
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SHEET_ID,
-    range: 'Pedidos!A:I',
-    valueInputOption: 'USER_ENTERED',
-    requestBody: {
-      values: [fila]
-    }
-  })
-} 
