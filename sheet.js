@@ -3,6 +3,7 @@ import { google } from 'googleapis'
 import dotenv from 'dotenv'
 
 dotenv.config()
+console.log('GOOGLE_CREDENTIALS_B64 LENGTH:', process.env.GOOGLE_CREDENTIALS_B64?.length)
 
 const SHEET_ID = process.env.SHEET_ID
 
@@ -36,6 +37,9 @@ export async function obtenerMenu() {
     }))
 }
 
+
+
+  
 
 export async function obtenerPromos() {
     const res = await sheets.spreadsheets.values.get({
