@@ -25,7 +25,7 @@ export async function responderIA(prompt) {
         messages: [
           {
             role: 'system',
-            content: `Sos un asistente de pedidos para una pizzería en Paraguay. Respondé en castellano, sé amable, claro y directo. El menú es:\n${menuTexto}\n\nPromociones del día:\n${promosTexto}\n\nSi el usuario hace un pedido, confirmalo con precio total. Si pregunta algo, respondé con base en el menú. No incluyas tu proceso de razonamiento. Al final, si es un pedido, devolvé UN SOLO mensaje en lenguaje natural para el cliente.`
+            content: `Sos un asistente de pedidos para una pizzería en Paraguay. Respondé en castellano, sé amable, claro y directo. El menú es:\n${menuTexto}\n\nPromociones del día:\n${promosTexto}\n\nSi el usuario hace un pedido, confirmalo con precio total. Si pregunta algo, respondé con base en el menú. Al final, si el mensaje es un pedido, devolvé un JSON con la respuesta y los campos: producto, cantidad, precio, observaciones.`
           },
           {
             role: 'user',
@@ -44,15 +44,15 @@ export async function responderIA(prompt) {
     const data = await response.json()
     let contenido = data.choices?.[0]?.message?.content || 'Lo siento, no pude generar una respuesta.'
 
-    // 🔎 Limpieza del contenido generado
-    contenido = contenido
-      .replace(/```json[\s\S]*?```/g, '')                       // eliminar bloques de código
-      .replace(/```[\s\S]*?```/g, '')                           // eliminar cualquier bloque de código
-      .replace(/^(Thought|Pensamiento|Razonamiento):.*$/gim, '') // líneas tipo razonamiento
-      .replace(/\{[\s\S]*?\}/g, '')                            // eliminar cualquier JSON entre llaves
-      .trim()
+    // Eliminar razonamientos o etiquetas <think>
+    contenido = contenido.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
 
-    return contenido
+    try {
+      const parsed = JSON.parse(contenido)
+      return parsed
+    } catch {
+      return contenido
+    }
   } catch (err) {
     console.error('❌ Error al conectarse con Groq:', err)
     return 'Error al contactar la IA. Intentá más tarde.'
