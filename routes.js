@@ -1,8 +1,6 @@
 // routes.js
 import express from 'express'
-import { obtenerMenu, agregarProducto, actualizarProducto, eliminarProducto } from './lib/supabase.js'
-
-import { registrarPedido, obtenerPedidosActivos, actualizarEstadoPedido } from './sheet.js'
+import { obtenerMenu, agregarProducto, actualizarProducto, eliminarProducto, registrarPedido, obtenerPedidosActivos, actualizarEstadoPedido } from './lib/supabase.js'
 
 const router = express.Router()
 

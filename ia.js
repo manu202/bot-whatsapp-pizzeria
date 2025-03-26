@@ -1,7 +1,7 @@
 // ia.js
 import fetch from 'node-fetch'
 import dotenv from 'dotenv'
-import { obtenerMenu, obtenerPromos } from './sheet.js'
+import { obtenerMenu, obtenerPromos } from './lib/supabase.js'
 dotenv.config()
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY
