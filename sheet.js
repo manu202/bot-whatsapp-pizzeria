@@ -53,3 +53,20 @@ export async function obtenerPromos() {
     }))
   }
   
+
+  export async function registrarPedido({ numero, mensaje }) {
+    const fecha = new Date().toLocaleString('es-PY', {
+      timeZone: 'America/Asuncion',
+      hour12: false,
+    });
+  
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: 'Pedidos!A:D',
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: [[fecha, numero, mensaje, '']],
+      },
+    });
+  }
+  
