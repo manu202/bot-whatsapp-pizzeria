@@ -1,7 +1,7 @@
 import pkg from '@whiskeysockets/baileys';
 const {
   makeWASocket,
-  useSingleFileAuthState,
+  useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion
 } = pkg;
@@ -13,13 +13,13 @@ import fs from 'fs';
 export async function startSock() {
   // 🧹 Elimina la sesión anterior para forzar QR nuevo
   try {
-    fs.unlinkSync('./session.json');
+    fs.rmSync('./auth', { recursive: true, force: true });
     console.log('🧹 Sesión anterior eliminada');
   } catch (err) {
     console.log('ℹ️ No había sesión previa para borrar');
   }
 
-  const { state, saveState } = await useSingleFileAuthState('./session.json');
+  const { state, saveCreds } = await useMultiFileAuthState('./auth');
   const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
@@ -52,7 +52,7 @@ export async function startSock() {
     }
   });
 
-  sock.ev.on('creds.update', saveState);
+  sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0];
