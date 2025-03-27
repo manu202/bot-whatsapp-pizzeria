@@ -1,11 +1,13 @@
 // index.js
 
 import dotenv from 'dotenv'
+dotenv.config()
+
 import express from 'express'
 import routes from './routes.js'
 import { startSock } from './bot/startSock.js'
 
-dotenv.config()
+
 
 const app = express()
 const PORT = process.env.PORT || 3000
