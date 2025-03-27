@@ -1,13 +1,5 @@
 // bot/startSock.js
 import fs from 'fs'
-try {
-  fs.rmSync('./auth', { recursive: true, force: true })
-  console.log('🧹 Auth eliminado antes de iniciar sesión')
-} catch (err) {
-  console.error('No se pudo borrar /auth:', err.message)
-}
-
-
 import { Boom } from '@hapi/boom'
 import {
   makeWASocket,
@@ -18,6 +10,14 @@ import {
 
 import { handleMessage } from './handlers.js'
 
+// 🔁 Borrar la carpeta auth antes de iniciar sesión
+try {
+  fs.rmSync('./auth', { recursive: true, force: true })
+  console.log('🧹 Auth eliminado antes de iniciar sesión')
+} catch (err) {
+  console.error('No se pudo borrar /auth:', err.message)
+}
+
 export async function startSock(server) {
   const { state, saveCreds } = await useMultiFileAuthState('auth')
   const { version } = await fetchLatestBaileysVersion()
@@ -25,7 +25,7 @@ export async function startSock(server) {
   const sock = makeWASocket({
     version,
     auth: state,
-    printQRInTerminal: false,
+    printQRInTerminal: true, // También muestra el QR en consola
     defaultQueryTimeoutMs: undefined
   })
 
