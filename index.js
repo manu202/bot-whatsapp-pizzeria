@@ -12,15 +12,15 @@ const PORT = process.env.PORT || 3000
 
 app.use(express.json())
 app.use(routes) // ✅ Usa todas las rutas centralizadas
+
 import fs from 'fs'
 
 try {
-  fs.rmSync('./auth', { recursive: true, force: true })
-  console.log('🧹 Auth eliminado. Se pedirá nuevo QR.')
+  fs.unlinkSync('./session.json')
+  console.log('🧹 Sesión eliminada. Se pedirá nuevo QR.')
 } catch (err) {
-  console.error('No se pudo borrar /auth:', err.message)
+  console.log('ℹ️ No había sesión previa para borrar')
 }
-
 
 startSock() // 🟢 Inicia el bot de WhatsApp
 

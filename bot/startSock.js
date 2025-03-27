@@ -1,19 +1,30 @@
 // bot/startSock.js
 import {
   makeWASocket,
+  useSingleFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import { handleMessage } from './handlers.js'
+import fs from 'fs'
 
 export async function startSock() {
+  // 🧹 Elimina la sesión anterior para forzar QR nuevo
+  try {
+    fs.unlinkSync('./session.json')
+    console.log('🧹 Sesión anterior eliminada')
+  } catch (err) {
+    console.log('ℹ️ No había sesión previa para borrar')
+  }
+
+  const { state, saveState } = await useSingleFileAuthState('./session.json')
   const { version } = await fetchLatestBaileysVersion()
 
   const sock = makeWASocket({
     version,
-    printQRInTerminal: true, // Siempre muestra el QR en consola
-    auth: undefined, // No guarda ni carga sesión
+    auth: state,
+    printQRInTerminal: true,
     defaultQueryTimeoutMs: undefined
   })
 
@@ -27,10 +38,11 @@ export async function startSock() {
     }
 
     if (connection === 'close') {
-      const shouldReconnect = !(
-        lastDisconnect?.error instanceof Boom &&
-        lastDisconnect.error.output?.statusCode === DisconnectReason.loggedOut
-      )
+      const shouldReconnect =
+        !(
+          lastDisconnect?.error instanceof Boom &&
+          lastDisconnect.error.output?.statusCode === DisconnectReason.loggedOut
+        )
 
       console.log('❌ Conexión cerrada. Reintentando:', shouldReconnect)
       if (shouldReconnect) startSock()
@@ -38,6 +50,8 @@ export async function startSock() {
       console.log('✅ Bot conectado a WhatsApp')
     }
   })
+
+  sock.ev.on('creds.update', saveState)
 
   sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0]
