@@ -11,13 +11,8 @@ import { handleMessage } from './handlers.js';
 import fs from 'fs';
 
 export async function startSock() {
-  // 🧹 Elimina la sesión anterior para forzar QR nuevo
-  try {
-    fs.rmSync('./auth', { recursive: true, force: true });
-    console.log('🧹 Sesión anterior eliminada');
-  } catch (err) {
-    console.log('ℹ️ No había sesión previa para borrar');
-  }
+  // 🔐 Si querés forzar nuevo QR, borrá manualmente la carpeta `auth/` antes de ejecutar.
+  // fs.rmSync('./auth', { recursive: true, force: true });
 
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
   const { version } = await fetchLatestBaileysVersion();
