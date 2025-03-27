@@ -1,4 +1,13 @@
 // bot/startSock.js
+import fs from 'fs'
+try {
+  fs.rmSync('./auth', { recursive: true, force: true })
+  console.log('🧹 Auth eliminado antes de iniciar sesión')
+} catch (err) {
+  console.error('No se pudo borrar /auth:', err.message)
+}
+
+
 import { Boom } from '@hapi/boom'
 import {
   makeWASocket,
